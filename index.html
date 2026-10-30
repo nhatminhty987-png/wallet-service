@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet & Ledger Core System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .lang-btn { padding: 8px 16px; background: #2c3e50; color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .lang-btn:hover { background: #34495e; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button.submit-btn { width: 100%; padding: 10px; background-color: #27ae60; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button.submit-btn:hover { background-color: #219150; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; font-size: 14px; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="title">Wallet & Ledger Core System</h1>
+            <!-- Nút chuyển đổi ngôn ngữ -->
+            <button class="lang-btn" onclick="toggleLanguage()">🌐 English</button>
+        </div>
+
+        <div class="grid">
+            <!-- Form Chuyển tiền -->
+            <div class="card">
+                <h2 id="transfer-title">Chuyển tiền Tức thời</h2>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label id="label-sender">Ví người gửi (ID)</label>
+                        <input type="number" id="sender" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="label-receiver">Ví người nhận (ID)</label>
+                        <input type="number" id="receiver" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="label-amount">Số tiền (VND)</label>
+                        <input type="number" id="amount" value="50000" required>
+                    </div>
+                    <button type="submit" class="submit-btn" id="btn-submit">Thực hiện Giao dịch</button>
+                </form>
+            </div>
+
+            <!-- Tra cứu số dư -->
+            <div class="card">
+                <h2 id="balance-title">Xem Số dư Ví</h2>
+                <div class="form-group">
+                    <label id="label-wallet-id">Nhập ID Ví</label>
+                    <input type="number" id="check-wallet-id" value="1">
+                </div>
+                <button class="submit-btn" style="background:#2980b9;" onclick="checkBalance()" id="btn-check">Kiểm tra Số dư</button>
+                <div id="balance-result" style="margin-top: 15px; font-size: 16px; font-weight: bold;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'vi';
+
+        const i18nText = {
+            vi: {
+                title: "Hệ thống Ví điện tử & Sổ cái",
+                transferTitle: "Chuyển tiền Tức thời",
+                labelSender: "Ví người gửi (ID)",
+                labelReceiver: "Ví người nhận (ID)",
+                labelAmount: "Số tiền (VND)",
+                btnSubmit: "Thực hiện Giao dịch",
+                balanceTitle: "Xem Số dư Ví",
+                labelWalletId: "Nhập ID Ví",
+                btnCheck: "Kiểm tra Số dư",
+                btnLang: "🌐 English"
+            },
+            en: {
+                title: "Wallet & Ledger Core System",
+                transferTitle: "Instant Money Transfer",
+                labelSender: "Sender Wallet ID",
+                labelReceiver: "Receiver Wallet ID",
+                labelAmount: "Amount (VND)",
+                btnSubmit: "Execute Transfer",
+                balanceTitle: "Check Wallet Balance",
+                labelWalletId: "Enter Wallet ID",
+                btnCheck: "Check Balance",
+                btnLang: "🌐 Tiếng Việt"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'vi' ? 'en' : 'vi';
+            const t = i18nText[currentLang];
+
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('transfer-title').innerText = t.transferTitle;
+            document.getElementById('label-sender').innerText = t.labelSender;
+            document.getElementById('label-receiver').innerText = t.labelReceiver;
+            document.getElementById('label-amount').innerText = t.labelAmount;
+            document.getElementById('btn-submit').innerText = t.btnSubmit;
+            document.getElementById('balance-title').innerText = t.balanceTitle;
+            document.getElementById('label-wallet-id').innerText = t.labelWalletId;
+            document.getElementById('btn-check').innerText = t.btnCheck;
+            document.querySelector('.lang-btn').innerText = t.btnLang;
+        }
+
+        async function checkBalance() {
+            const walletId = document.getElementById('check-wallet-id').value;
+            const res = await fetch(`http://localhost:8000/api/v1/wallets/${walletId}/balance`, {
+                headers: { 'Accept-Language': currentLang }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('balance-result').innerHTML = `<span style="color:green;">Balance: ${data.balance.toLocaleString()} VND (${data.source})</span>`;
+            } else {
+                document.getElementById('balance-result').innerHTML = `<span style="color:red;">Error: ${data.detail}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+-- 1. Bảng Người dùng
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Bảng Ví / Tài khoản (Wallets)
+CREATE TABLE wallets (
+    wallet_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id),
+    balance NUMERIC(15, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0), -- Ngăn dư âm ở tầng DB
+    currency VARCHAR(10) DEFAULT 'VND',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Bảng Sổ cái Giao dịch (Ledger Entry)
+CREATE TABLE ledger_entries (
+    entry_id SERIAL PRIMARY KEY,
+    transaction_id VARCHAR(64) UNIQUE NOT NULL, -- Idempotency Key
+    from_wallet_id INT REFERENCES wallets(wallet_id),
+    to_wallet_id INT REFERENCES wallets(wallet_id),
+    amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
+    status VARCHAR(20) DEFAULT 'SUCCESS', -- SUCCESS, FAILED
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
